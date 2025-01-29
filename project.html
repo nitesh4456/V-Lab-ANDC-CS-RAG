@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Allocation Graph with Add Resource</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="project.css">
+</head>
+<body>
+    <div id="rag-container"></div>
+    <button onclick="addNode()">Add Process</button>
+    <button onclick="addResource()">Add Resource</button>
+    <button onclick="addResourceInstance()">Add Resource Instance</button>
+    <button onclick="show_links_hold_wait()">Process :Hold & wait </button>
+    <button onclick="show_links_circular_wait()">Process :Circular wait </button>
+    
+
+    <script src="project.js"></script>
+</body>
+</html>
+
