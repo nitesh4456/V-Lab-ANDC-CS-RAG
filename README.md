@@ -1,1 +1,1 @@
-for a live demo visit :https://github.com/nitesh4456/V-Lab-ANDC-CS-RAG
+for a live demo visit :https://nitesh4456.github.io/V-Lab-ANDC-CS-RAG/
