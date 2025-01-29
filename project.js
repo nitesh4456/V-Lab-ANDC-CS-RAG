@@ -35,7 +35,9 @@
             { source: 'P2', target: 'R2.1' }
         ];//global variable to store the cycle links
         let local_iteration_cycle_links=[
-            { source: null, target: null }
+            { source: 'P1', target: 'R1.1' },
+            { source: 'R1.2', target: 'P2' },
+            { source: 'P2', target: 'R2.1' }
         ];
 
         //toggling features 
@@ -43,8 +45,10 @@
         let isCycle = false;
         
         function clac_cycle_edges(){
-            calc_hold_wait_edges();
+            yellowLinks=[];
             cycleLinks=[];
+            local_iteration_cycle_links=[];
+            calc_hold_wait_edges();
             //calc_hold_wait_edges();//re-calcuate the hold-wait edges
             for(let link of yellowLinks){//all cycle edgeds will be an hold-wait edge but not vice-versa 
                 const sourceNode = nodes1.find(node => node.id === link.source.id || node.id === link.source);
@@ -74,6 +78,12 @@
                     }
                 }
             }
+            // Remove duplicates
+            cycleLinks = cycleLinks.filter((value, index, self) => 
+                index === self.findIndex((t) => (
+                    t.source === value.source && t.target === value.target
+                ))
+            );
             console.log("cycleLinks -local : " , cycleLinks);
 
         }
@@ -87,7 +97,7 @@
                 const targetNode = nodes.find(node => node.id === link.target.id || node.id === link.target);
                 if(sourceNode.type==="resource" && targetNode.type==="process"){//hold wait can only from resource to process and + process to another resource
                     for (let link1 of links1){
-                        if(link.target===link1.source ){
+                        if(link.target===link1.source){
                             for(let link2 of links1){
                                 if(link2.source===link1.target){
                                     yellowLinks.push(link)
@@ -175,6 +185,11 @@
         
 
         function renderGraph() {
+        cycleLinks=[];
+        yellowLinks=[];
+        local_iteration_cycle_links=[];
+        calc_hold_wait_edges();
+        clac_cycle_edges();
         // Group resources
         const groups = d3.group(nodes.filter(d => d.type === 'resource'), d => d.group);
         
@@ -226,17 +241,15 @@
                     (link.source.id === sourceNode.id || link.source === sourceNode.id) && 
                     (link.target.id === targetNode.id || link.target === targetNode.id)
                 );
-                console.log("exists : " , exists);
-                if(exists && isHold){return "yellow"}//apply yello to edges if the toggling view on
-                
                 //CASE 2 CIRCULAR-wait
                 const exists1 = cycleLinks.some(link => 
                     (link.source.id === sourceNode.id || link.source === sourceNode.id) && 
                     (link.target.id === targetNode.id || link.target === targetNode.id)
                 );
                 console.log("exists1 : " , exists1);
-                if(exists1 && isCycle){return "#00FF00"}//apply yello to edges if the toggling view on
-                // Output: trues
+                console.log("exists : " , exists);
+                if(exists && (isHold && !isCycle)){return "yellow"}//apply yello to edges if the toggling view on
+                else if(exists1 && ( isCycle && !isHold)){return "#00FF00"}//apply green to edges if the toggling view on for cycle 
 
                 else if (sourceNode.type === "resource" && targetNode.type === "process") {
                     return "blue"; // Resource to Process
@@ -377,17 +390,14 @@
                             // If no existing edge is found, add the new edge
                             links.push({ source: selectedNode.id, target: d.id });
                             links1.push({ source: selectedNode.id, target: d.id });
-                            console.log("links : " , links);
-                            console.log("links1: " , links1);
-                            calc_hold_wait_edges();
-                            console.log("yellowLinks : " , yellowLinks);
-                            clac_cycle_edges();
-                            console.log("cycleLinks-global: " , cycleLinks);
-                            
-                            
-                            
                         }
-        
+                        //calculate the values each time when a right click appears 
+                        console.log("links : " , links);
+                        console.log("links1: " , links1);
+                        //calc_hold_wait_edges();
+                        //console.log("yellowLinks : " , yellowLinks);
+                        //clac_cycle_edges();
+                        //console.log("cycleLinks-global: " , cycleLinks);
                         renderGraph();  // Re-render the graph
                     } else {
                         alert("Invalid link: Links must connect processes to resources.");
@@ -503,6 +513,8 @@
 
         // Initial rendering of the graph
         yellowLinks=[];//just making the yelloLinks empty in start //dont delete this
+        cycleLinks=[];//just making the cycleLinks empty in start //dont delete this
+        local_iteration_cycle_links=[];
         renderGraph();
         
         // Update positions of links and nodes after every tick of the simulation
